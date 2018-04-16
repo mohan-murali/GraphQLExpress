@@ -1,12 +1,11 @@
 var express = require('express');
 var graphqlHTTP = require('express-graphql');
-var { getSchema } = require('./schema.js')
+var { schema } = require('./schema.js')
 var { getRoot } = require('./resolver.js')
 
 var app = express();
 app.use('/graphql', graphqlHTTP({
-    schema: getSchema(),
-    rootValue: getRoot(),
+    schema: schema,
     graphiql: true,
 }));
 app.listen(4000);

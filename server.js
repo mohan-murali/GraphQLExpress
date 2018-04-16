@@ -13,6 +13,7 @@ var schema = buildSchema(`
         id: ID!
         content: String
         author: String
+        getRelatedMessage: String
     }
 
     type RandomDie {
@@ -42,6 +43,12 @@ class Message {
         this.id = id;
         this.content = content;
         this.author = author;
+    }
+
+    getRelatedMessage(root){
+        console.log("this is the start");
+        console.log(root);
+        return root.content;
     }
 }
 

@@ -1,43 +1,129 @@
+const {
+    GraphQLSchema, 
+    GraphQLObjectType, 
+    GraphQLString,
+    GraphQLInt,
+    GraphQLList,
+    GraphQLInputObjectType,
+    GraphQLNonNull 
+} = require('graphql');
 
-var { buildSchema } = require('graphql')
 //Construct a schema, using GraphQL schema language
+const customerList = require('./customerList.js')
+const branchesList = require('./branchesList.js')
+let customerID = 4;
 
-function getSchema(){
-var schema = buildSchema(`
+const BranchType = new GraphQLObjectType({
+    name: 'Branch',
 
-type Branch{
-    id: Int!
-    name: String!
-    address: String!
-    customers: [Customer!]!
-}
+    fields: () => ({
+        id: { type: new GraphQLNonNull(GraphQLInt) },
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        address: { type: new GraphQLNonNull(GraphQLString) },
+        customers: {
+            type: new GraphQLList(CustomerType),
+            resolve: (root) => {
+                let resultList = [];
+                for(let i=0; i< customerList.length; i++){
+                    if(customerList[i].branchId == root.id){
+                        resultList.push(customerList[i]);
+                    }
+                }
+                return resultList;
+            }
+        }
+    })
+});
 
-input CustomerInput {
-    name:String!
-    address: String
-}
+const CustomerType = new GraphQLObjectType({
+    name: 'Customer',
+    description: '...',
 
-type Customer {
-    id: Int!
-    name: String!
-    address: String
-}
+    fields: () => ({
+        id: { type: new GraphQLNonNull(GraphQLInt) },
+        name: { type: new GraphQLNonNull(GraphQLString) } ,
+        address: { type: new GraphQLNonNull(GraphQLString)} ,
+        branchId: { type: new GraphQLNonNull(GraphQLInt) } ,
+        branch: {
+            type: BranchType,
+            resolve: (root) => {
+                for (let i=0; i< branchesList.length; i++){
+                    if(branchesList[i].id == root.branchId){
+                        return branchesList[i];
+                    }
+                }
+            }
+        }
+    })
+});
 
-    type Query{
-        getAllCustomers: [Customer]
-        getCustomerByID(id:ID!): Customer
-        getBranchList: [Branch]
-    }
+const QueryType = new GraphQLObjectType({
+    name: 'Query',
+    description: '...',
 
-    type Mutation{
-        createCustomer(input: CustomerInput!): Customer
-        updateCustomer(id: ID!, input: CustomerInput!): Customer
-    }
-`);
+    fields: ()=>({
+        getCustomerByID: {
+            type: CustomerType,
+            args: {
+                id: {type: new GraphQLNonNull(GraphQLInt) }
+            },
+            resolve: (root, args)=>{
+                for(let i =0; i< customerList.length; i++){
+                    if(customerList[i].id == args.id){
+                        return customerList[i];
+                    }
+                }
+    
+                throw new Error('customer not found for the id: '+ args.id)
+            }
+        },
+        getAllCustomers: {
+            type: new GraphQLList(CustomerType),
+            resolve: ()=>{
+                return customerList;
+            }
+        },
+        getAllBranches:{
+            type: new GraphQLList(BranchType),
+            resolve: ()=>{
+                return branchesList;
+            }
+        }
+    })
+});
 
-return schema;
-}
+const MutationType = new GraphQLObjectType({
+    name: 'Mutation',
+    description: 'Sample Mutation examples',
+
+    fields: ()=> ({
+        createCustomer:{
+            type: CustomerType,
+            args: {
+                name: { type: new GraphQLNonNull(GraphQLString) },
+                address: { type: new GraphQLNonNull(GraphQLString) },
+                branchId: { type: new GraphQLNonNull(GraphQLInt) } 
+            },
+
+            resolve: (root, args)=> {
+                customerID++;
+                const customer = {
+                    id: customerID,
+                    name: args.name,
+                    address: args.address,
+                    branchId: args.branchId
+                }
+                customerList.push(customer);
+                return customer;
+            }
+        }
+    })
+})
+
 
 module.exports = {
-    getSchema 
+    schema: new GraphQLSchema({
+        query: QueryType,
+        mutation: MutationType
+    })
 }
