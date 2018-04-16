@@ -5,23 +5,23 @@ var { buildSchema } = require('graphql')
 function getSchema(){
 var schema = buildSchema(`
 
-type Branch{
-    id: Int!
-    name: String!
-    address: String!
-    customers: [Customer!]!
-}
+    type Branch{
+        id: Int!
+        name: String!
+        address: String!
+        customers: [Customer!]!
+    }
 
-input CustomerInput {
-    name:String!
-    address: String
-}
+    input CustomerInput {
+        name:String!
+        address: String
+    }
 
-type Customer {
-    id: Int!
-    name: String!
-    address: String
-}
+    type Customer {
+        id: Int!
+        name: String!
+        address: String
+    }
 
     type Query{
         getAllCustomers: [Customer]
