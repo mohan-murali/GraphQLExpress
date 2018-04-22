@@ -120,7 +120,6 @@ const MutationType = new GraphQLObjectType({
     })
 })
 
-
 module.exports = {
     schema: new GraphQLSchema({
         query: QueryType,
