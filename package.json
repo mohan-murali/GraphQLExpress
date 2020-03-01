@@ -15,5 +15,8 @@
   },
   "resolutions": {
     "graphql": "0.13.2"
+  },
+  "devDependencies": {
+    "cors": "^2.8.5"
   }
 }
